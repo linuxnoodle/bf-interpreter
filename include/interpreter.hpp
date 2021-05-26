@@ -6,7 +6,7 @@
 #include <climits>
 
 #define NODE_COUNT 30000
-#define ERROR_OR_WRAP_FOR_OVERFLOWS true
+#define ERROR_OR_WRAP_FOR_OVERFLOWS false
 
 /**
  * Takes in a string, and interprets it as bf.

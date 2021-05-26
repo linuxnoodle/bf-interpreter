@@ -156,7 +156,7 @@ void interpret(std::string code, bool isVerbose){
                 break;
             case '[':
                 if (memory[pointerLocation] == 0){
-                    unsigned long newPosition = findCorrespondingBracket(cleanedCode, i) + 1;
+                    unsigned long newPosition = findCorrespondingBracket(cleanedCode, i);
                     if (isVerbose)
                         std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Current node is zero, jumping to " << newPosition << ".\n";
                     if (newPosition > (memory.size() - 1)){
