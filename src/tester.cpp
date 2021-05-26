@@ -3,7 +3,7 @@
 #include <fstream>
 
 int main(){
-    std::cout << "Text to print:\n";
+    std::cout << "Text to print (will send on newline):\n";
     
     std::string input;
     std::getline(std::cin, input);

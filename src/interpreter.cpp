@@ -1,7 +1,8 @@
 #include "../include/interpreter.hpp"
+#include <climits>
 
-std::vector<int> memory(30000);
-unsigned long int pointerLocation = 15000;
+std::vector<int> memory(NODE_COUNT);
+unsigned long pointerLocation = NODE_COUNT/2;
 
 std::string clean(std::string dirtyCode){
     std::string cleanedCode;
@@ -39,15 +40,15 @@ std::string clean(std::string dirtyCode){
 }
 
 bool checkIfBracketsAreBalanced(std::string text){
-    int leftCount = 0, rightCount = 0;
+    int unclosedBrackets = 0;
     for (int i = 0; i < text.length(); ++i){
         if (text[i] == '['){
-            ++leftCount;
+            ++unclosedBrackets;
         } else if (text[i] == ']'){
-            ++rightCount;
+            --unclosedBrackets;
         }
     }
-    return (leftCount == rightCount);
+    return (unclosedBrackets == 0);
 }
 
 int findCorrespondingBracket(std::string text, int bracketPosition){
@@ -64,6 +65,43 @@ int findCorrespondingBracket(std::string text, int bracketPosition){
     }
     return correspondingPosition;
 }
+
+int safeChange(int &a, bool incrementOrDecrement){
+    if (incrementOrDecrement){
+        if (ERROR_OR_WRAP_FOR_OVERFLOWS && a == INT_MAX){
+            std::cerr << "bf-interpreter: error: integer overflow\n";
+            std::abort();
+        } else {
+            return ++a;
+        }
+    } else {
+        if (ERROR_OR_WRAP_FOR_OVERFLOWS && a == INT_MIN){
+            std::cerr << "bf-interpreter: error: integer underflow\n";
+            std::abort();
+        } else {
+            return --a;
+        }
+    }
+}
+
+unsigned long safePointerChange(unsigned long &a, bool incrementOrDecrement){
+    if (incrementOrDecrement){
+        if (ERROR_OR_WRAP_FOR_OVERFLOWS && a == NODE_COUNT){
+            std::cerr << "bf-interpreter: error: unsigned long overflow\n";
+            std::abort();
+        } else {
+            return ++a;
+        }
+    } else {
+        if (ERROR_OR_WRAP_FOR_OVERFLOWS && a == 0){
+            std::cerr << "bf-interpreter: error: unsigned long underflow\n";
+            std::abort();
+        } else {
+            return --a;
+        }
+    }
+}
+
 void interpret(std::string code, bool isVerbose){
     if (isVerbose)
         std::cout << "Generating memory.\n";
@@ -76,72 +114,79 @@ void interpret(std::string code, bool isVerbose){
         std::cerr << "bf-interpreter: fatal error: provided code has unbalanced brackets\n";
     }
 
+    std::string buffer = "";
+
+    // Runs every instruction
     for (unsigned long int i = 0; i < cleanedCode.length(); ++i){
         switch (cleanedCode[i]) {
             case '>':
                 if (isVerbose)
-                    std::cout << "Character " << i << ", " << cleanedCode[i] << ": Moving pointer to position " << pointerLocation << " in memory.\n";
-                ++pointerLocation;
+                    std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Moving pointer to the right.\n";
+                safePointerChange(pointerLocation, true);
                 break;
             case '<':
                 if (isVerbose)
-                    std::cout << "Character " << i << ", " << cleanedCode[i] << ": Moving pointer to position " << pointerLocation << " in memory.\n";
-                --pointerLocation;
+                    std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Moving pointer to the left.\n";
+                safePointerChange(pointerLocation, false);
                 break;
             case '+':
                 if (isVerbose)
-                    std::cout << "Character " << i << ", " << cleanedCode[i] << ": Incrementing value at position " << pointerLocation << " in memory, setting it to value " << memory[pointerLocation] << ".\n";
-                ++memory[pointerLocation];
+                    std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Incrementing value, setting it to the value above " << memory[pointerLocation] << ".\n";
+                safeChange(memory[pointerLocation], true);
                 break;
             case '-':
                 if (isVerbose)
-                    std::cout << "Character " << i << ", " << cleanedCode[i] << ": Decrementing value at position " << pointerLocation << " in memory, setting it to value " << memory[pointerLocation] << ".\n";
-                --memory[pointerLocation];
+                    std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Decrementing value, setting it to the value below " << memory[pointerLocation] << ".\n";
+                safeChange(memory[pointerLocation], false);
                 break;
             case '.':
-                if (isVerbose)
-                    std::cout << "Character " << i << ", " << cleanedCode[i] << ": Outputting character '" << static_cast<char>(memory[pointerLocation]) << "' to stdout.\n";
-                std::cout << static_cast<char>(memory[pointerLocation]);
+                if (isVerbose){
+                    std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Outputting character '" << static_cast<char>(memory[pointerLocation]) << "' to stdout.\n";
+                    buffer += static_cast<char>(memory[pointerLocation]); 
+                } else {
+                    std::cout << static_cast<char>(memory[pointerLocation]);
+                }
                 break;
             case ',':
                 if (isVerbose)
-                    std::cout << "Character " << i << ", " << cleanedCode[i] << ": Taking character from stdin and storing it in memory position " << pointerLocation << ".\n";
+                    std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Taking character from stdin.\n";
                 char character;
                 std::cin >> character;
                 memory[pointerLocation] = static_cast<int>(character);
                 break;
             case '[':
                 if (memory[pointerLocation] == 0){
-                    unsigned long int newPosition = findCorrespondingBracket(cleanedCode, i) + 1;
+                    unsigned long newPosition = findCorrespondingBracket(cleanedCode, i) + 1;
                     if (isVerbose)
-                        std::cout << "Character " << i << ", " << cleanedCode[i] << ": Memory at position " << pointerLocation << " is zero, jumping to " << newPosition << ".\n";
-                    if (newPosition > 29999){
-                        std::cerr << "bf-interpreter: fatal error: exceeded memory of 30,000 nodes\n";
+                        std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Current node is zero, jumping to " << newPosition << ".\n";
+                    if (newPosition > (memory.size() - 1)){
+                        std::cerr << "bf-interpreter: fatal error: exceeded memory of " << memory.size() << " nodes\n";
                         std::abort();
                     } else {
                         i = newPosition;
                     }
                 } else {
                     if (isVerbose)
-                        std::cout << "Character " << i << ", " << cleanedCode[i] << ": Memory at position " << pointerLocation << " is nonzero, no jumping today.\n";
+                        std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Current node is nonzero, no jumping today.\n";
                 }
                 break;
             case ']':
                 if (memory[pointerLocation] != 0){
-                    unsigned long int newPosition = findCorrespondingBracket(cleanedCode, i);
+                    unsigned long newPosition = findCorrespondingBracket(cleanedCode, i);
                     if (isVerbose)
-                        std::cout << "Character " << i << ", " << cleanedCode[i] << ": Memory at position " << pointerLocation << " is nonzero, jumping back to " << newPosition << ".\n";
-                    if (newPosition > 29999){
-                        std::cerr << "bf-interpreter: fatal error: exceeded memory of 30,000 nodes\n";
+                        std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Current node is nonzero, jumping back to " << newPosition << ".\n";
+                    if (newPosition > (memory.size() - 1)){
+                        std::cerr << "bf-interpreter: fatal error: exceeded memory of " << memory.size() << " nodes\n";
                         std::abort();
                     } else {
                         i = newPosition;
                     }
                 } else {
                     if (isVerbose)
-                        std::cout << "Character " << i << ", " << cleanedCode[i] << ": Memory at position " << pointerLocation << " is zero, no jumping today.\n";
+                        std::cout << "Character " << i << " " << cleanedCode[i] << " position " << pointerLocation << " : Current node is zero, no jumping today.\n";
                 }
                 break;
         }
     }
+    std::cout << buffer;
 }

@@ -1,4 +1,3 @@
-#include <ios>
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -17,27 +16,20 @@ int main(int argc, char *argv[]){
     } else {
         // Help menu
         if (std::string(argv[1]) == "--help" || std::string(argv[1]) == "-h"){
-            std::cerr << "Usage: bf-interpreter [FILE]\nInterprets the [FILE] as bf.\n\nFlags:\n\t-h, --help\tshows helpscreen\n\t-v, --verbose\tdescribes every single instruction at runtime\n";
+            std::cerr << "Usage: bf-interpreter -v [FILE]\nInterprets the [FILE] as bf.\n\nFlags:\n\t-h, --help\tshows helpscreen\n\t-v, --verbose\tdescribes every single instruction at runtime\n";
             return 1;
         }
         
-        // Please don't judge me for this, I did this at 6:40 am. Will definitely refactor if I revisit this project.
-        int filenameIndex = 1;
+        int filenameIndex = argc - 1;
 
         // Checks if file provided exists, or if the filename corresponds to a directory.
-        if (std::filesystem::exists(argv[1])){    
-            if (std::filesystem::is_directory(argv[1])){
+        if (std::filesystem::exists(argv[filenameIndex])){    
+            if (std::filesystem::is_directory(argv[filenameIndex])){
                 std::cerr << "bf-interpreter: filename provided is that of a directory\nTry 'bf-interpreter --help' for more information.\n";
                 return 1;
             }
-        } else if (std::filesystem::exists(argv[2])){
-            if (std::filesystem::is_directory(argv[2])){
-                std::cerr << "bf-interpreter: filename provided is that of a directory\nTry 'bf-interpreter --help' for more information.\n";
-                return 1;
-            }
-            filenameIndex = 2;
         } else {
-            std::cerr << "bf-interpreter: file provided does not exist\nTry 'bf-interpreter --help' for more information.\n";
+            std::cerr << "bf-interpreter: either the filename provided does not exist, or you didn't put the filename at the end.\n";
             return 1;
         }
         
@@ -51,7 +43,7 @@ int main(int argc, char *argv[]){
 
         file.close();
 
-        if (argc == 3 && (std::string(argv[1]) == "-v" || std::string(argv[1]) == "--verbose" || std::string(argv[2]) == "-v" || std::string(argv[2]) == "--verbose")){
+        if (argc == 3 && (std::string(argv[1]) == "-v" || std::string(argv[1]) == "--verbose")){
             isVerbose = true;
         }
 

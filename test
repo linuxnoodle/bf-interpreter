@@ -1,0 +1,24 @@
++>>
+
+	This code runs at pointer offset two and unknown bit width; don't
+	assume you have more that eight bits
+
+	======= DEMO CODE =======
+	First just print "Hello"
+
+	Notice that I reset the cells despite knowing that they are zero
+	this is a test for proper functioning of the ability to skip over
+	a loop that's never executed but isn't actually a comment loop
+
+	Secondly there's a NOP movement between the two 'l' characters
+
+	Also there's some commented out code afterwards
+
+	>[-]<[-]++++++++[->+++++++++<]>.----[--<+++>]<-.+++++++.><.+++.
+	[-][[-]>[-]+++++++++[<+++++>-]<+...--------------.>++++++++++[<+
+	++++>-]<.+++.-------.>+++++++++[<----->-]<.-.>++++++++[<+++++++>
+	-]<++.-----------.--.-----------.+++++++.----.++++++++++++++.>++
+	++++++++[<----->-]<..[-]++++++++++.[-]+++++++[.,]-]
+
+	===== END DEMO CODE =====
+<<-

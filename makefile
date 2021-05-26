@@ -2,7 +2,7 @@ PROJECT:=bf-interpreter
 TESTER:=generate-print-program
 
 CC:=g++
-LDFLAGS=-O2 -std=c++17 -lstdc++fs
+LDFLAGS=-Ofast -std=c++17 -lstdc++fs
 UNAME:=$(shell uname)
 
 OBJDIR:=obj
@@ -15,7 +15,7 @@ $(PROJECT): $(OBJ)
 	$(CC) $(OBJ) $(LDFLAGS) -o $@
 
 $(TESTER):
-	$(CC) ./src/tester.cpp $(LDFLAGS) -o $@
+	$(CC) ./src/tester.cpp -Ofast -o $@
 
 $(OBJDIR)/%.o: src/%.cpp | $(OBJDIR)
 	$(CC) $(LDFLAGS) -c $< -o $@

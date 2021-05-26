@@ -2,6 +2,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cstdlib>
+#include <climits>
+
+#define NODE_COUNT 30000
+#define ERROR_OR_WRAP_FOR_OVERFLOWS true
 
 /**
  * Takes in a string, and interprets it as bf.
