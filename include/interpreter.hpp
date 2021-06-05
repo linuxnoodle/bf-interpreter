@@ -4,16 +4,17 @@
 #include <string>
 #include <cstdlib>
 #include <climits>
-
-#define NODE_COUNT 30000
-#define ERROR_OR_WRAP_FOR_OVERFLOWS false
+#include <type_traits>
+#include <stdexcept>
+#include <algorithm>
 
 /**
  * Takes in a string, and interprets it as bf.
  *
  * @param code Input code
+ * @param flags Changes the manner of interpretation, such as verbosity or optimization
  */
-void interpret(std::string code, bool isVerbose);
+void interpret(std::string code, std::vector<std::string> flags);
 
 /**
  * Takes in dirty bf, and parses out comments.
